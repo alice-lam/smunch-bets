@@ -2,15 +2,15 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'components/card';
-import { getData, pushData } from 'app/actions';
+import { getData, pushData, updateData } from 'app/actions';
 
 const sampleBets = [
-    { id: 1, title: 'Connally makes SciOly state', creator: 'Alice', stake: '$20', status: 'Pending', participants: ['Alice', 'Bob'] },
+    { id: 1, title: 'Connally makes SciOly state', creator: 'Alice', stake: '$20', status: 'In Progress', participants: ['Alice', 'Bob'] },
     { id: 2, title: 'It rains on Friday', creator: 'Bob', stake: 'Lunch', status: 'Completed', participants: ['Bob', 'Charlie'], notes: 'Bob: yes, Charlie: no' },
     { id: 3, title: 'New feature ships by end of sprint', creator: 'Charlie', stake: '1 shot', status: 'Cancelled', participants: ['Charlie'] }
 ];
 
-const STATUS_OPTIONS = ['Pending', 'Completed', 'Cancelled'];
+const STATUS_OPTIONS = ['In Progress', 'Pending Punishment', 'Completed', 'Cancelled'];
 
 function BetMenu({ bet, onEdit, onChangeStatus }) {
     const [open, setOpen] = useState(false);
@@ -107,7 +107,7 @@ export default function Page() {
         if (!participants.some((p) => p.toLowerCase() === newBet.creator.toLowerCase())) {
             participants.unshift(newBet.creator);
         }
-        const newBetEntry = { id: Date.now(), title: newBet.title, creator: newBet.creator, stake: newBet.stake, participants, notes: newBet.notes, status: 'Pending' };
+        const newBetEntry = { title: newBet.title, creator: newBet.creator, stake: newBet.stake, participants, notes: newBet.notes, status: 'Pending Punishment' };
         const result = await pushData(newBetEntry);
         if(result.success) {
             setBets([...bets, newBetEntry]);
@@ -123,7 +123,7 @@ export default function Page() {
         });
     }
 
-    function handleSaveEdit(e) {
+    async function handleSaveEdit(e) {
         e.preventDefault();
         if (!editingBet.title || !editingBet.creator || !editingBet.stake) return;
 
@@ -135,12 +135,27 @@ export default function Page() {
             participants.unshift(editingBet.creator);
         }
 
-        setBets(bets.map((b) => b.id === editingBet.id ? { ...editingBet, participants } : b));
-        setEditingBet(null);
+        // Call the server action
+         const result = await updateData(editingBet);
+        if(result.success){
+            setBets(bets.map((b) => b.id === editingBet.id ? { ...editingBet, participants } : b));
+            setEditingBet(null);
+        }
     }
 
-    function handleChangeStatus(betId, newStatus) {
-        setBets(bets.map((b) => b.id === betId ? { ...b, status: newStatus } : b));
+    async function handleChangeStatus(betId, newStatus) {
+        const betToUpdate = bets.find((b) => b.id === betId);
+        if (!betToUpdate) return;
+
+        const updatedBet = {
+            ...betToUpdate,
+            status: newStatus
+        };
+
+        const result = await updateData(updatedBet);
+        if (result.success) {
+            setBets(bets.map((b) => b.id === betId ? updatedBet : b));
+        }
     }
 
     return (
@@ -275,7 +290,7 @@ export default function Page() {
                                             </div>
                                             <span
                                                 className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold shrink-0 ${
-                                                    bet.status === 'Active'
+                                                    bet.status === 'In Progress'
                                                         ? 'bg-blue-100 text-blue-800'
                                                         : bet.status === 'Completed'
                                                         ? 'bg-green-100 text-green-800'
