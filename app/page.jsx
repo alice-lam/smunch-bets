@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'components/card';
-import { getData } from 'app/actions';
+import { getData, pushData } from 'app/actions';
 
 const sampleBets = [
     { id: 1, title: 'Connally makes SciOly state', creator: 'Alice', stake: '$20', status: 'Pending', participants: ['Alice', 'Bob'] },
@@ -89,14 +89,13 @@ export default function Page() {
     useEffect(() => {
         async function fetchData() {
             const data = await getData();
-            console.log(data);
             setBets(data);
             setLoading(false);
         };
         fetchData();
     }, []);
 
-    function handleAddBet(e) {
+    async function handleAddBet(e) {
         e.preventDefault();
         if (!newBet.title || !newBet.creator || !newBet.stake) return;
 
@@ -108,10 +107,13 @@ export default function Page() {
         if (!participants.some((p) => p.toLowerCase() === newBet.creator.toLowerCase())) {
             participants.unshift(newBet.creator);
         }
-
-        setBets([...bets, { id: Date.now(), title: newBet.title, creator: newBet.creator, stake: newBet.stake, participants, notes: newBet.notes, status: 'Active' }]);
-        setNewBet({ title: '', creator: '', stake: '', participantInput: '', notes: '' });
-        setShowForm(false);
+        const newBetEntry = { id: Date.now(), title: newBet.title, creator: newBet.creator, stake: newBet.stake, participants, notes: newBet.notes, status: 'Pending' };
+        const result = await pushData(newBetEntry);
+        if(result.success) {
+            setBets([...bets, newBetEntry]);
+            setNewBet({ title: '', creator: '', stake: '', participantInput: '', notes: '' });
+            setShowForm(false);
+        }
     }
 
     function handleEditBet(bet) {
