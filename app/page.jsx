@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Card } from 'components/card';
+import { getData } from 'app/actions';
 
 const sampleBets = [
     { id: 1, title: 'Connally makes SciOly state', creator: 'Alice', stake: '$20', status: 'Pending', participants: ['Alice', 'Bob'] },
@@ -28,7 +29,7 @@ function BetMenu({ bet, onEdit, onChangeStatus }) {
     }, []);
 
     return (
-        <div className="relative shrink-0" style={{ 'align-self': 'center'}} ref={menuRef}>
+        <div className="relative shrink-0" style={{ alignSelf: 'center'}} ref={menuRef}>
             <button
                 onClick={() => { setOpen(!open); setShowStatusMenu(false); }}
                 className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-100 transition-colors text-neutral-400 hover:text-neutral-600"
@@ -83,6 +84,17 @@ export default function Page() {
     const [showForm, setShowForm] = useState(false);
     const [newBet, setNewBet] = useState({ title: '', creator: '', stake: '', participantInput: '', notes: '' });
     const [editingBet, setEditingBet] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        async function fetchData() {
+            const data = await getData();
+            console.log(data);
+            setBets(data);
+            setLoading(false);
+        };
+        fetchData();
+    }, []);
 
     function handleAddBet(e) {
         e.preventDefault();
@@ -130,154 +142,158 @@ export default function Page() {
     }
 
     return (
-        <div className="flex flex-col gap-8 sm:gap-12">
-            <section className="flex flex-col gap-6">
-                <div className="flex items-center justify-between flex-wrap gap-4">
-                    <h1>Current Bets</h1>
-                    <button className="btn btn-lg" onClick={() => setShowForm(!showForm)}>
-                        {showForm ? 'Cancel' : '+ Add New Bet'}
-                    </button>
-                </div>
+        <>
+           { !loading && 
+           <div className="flex flex-col gap-8 sm:gap-12">
+                <section className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between flex-wrap gap-4">
+                        <h1>Current Bets</h1>
+                        <button className="btn btn-lg" onClick={() => setShowForm(!showForm)}>
+                            {showForm ? 'Cancel' : '+ Add New Bet'}
+                        </button>
+                    </div>
 
-                {showForm && (
-                    <Card title="New Bet">
-                        <form onSubmit={handleAddBet} className="flex flex-col gap-4">
-                            <input
-                                type="text"
-                                placeholder="What's the bet?"
-                                className="input"
-                                value={newBet.title}
-                                onChange={(e) => setNewBet({ ...newBet, title: e.target.value })}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Your name"
-                                className="input"
-                                value={newBet.creator}
-                                onChange={(e) => setNewBet({ ...newBet, creator: e.target.value })}
-                            />
-                            <input
-                                type="text"
-                                placeholder="What's at stake?"
-                                className="input"
-                                value={newBet.stake}
-                                onChange={(e) => setNewBet({ ...newBet, stake: e.target.value })}
-                            />
-                            <input
-                                type="text"
-                                placeholder="People involved (comma-separated, e.g. Alice, Bob)"
-                                className="input"
-                                value={newBet.participantInput}
-                                onChange={(e) => setNewBet({ ...newBet, participantInput: e.target.value })}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Additional notes, conditions, and positions"
-                                className="input"
-                                value={newBet.notes}
-                                onChange={(e) => setNewBet({ ...newBet, notes: e.target.value })}
-                            />
-                            <button type="submit" className="btn btn-lg">
-                                Place Bet
-                            </button>
-                        </form>
-                    </Card>
-                )}
-            </section>
-
-            <section className="flex flex-col gap-4">
-                {bets.length === 0 ? (
-                    <Card>
-                        <p className="text-center text-neutral-400">No bets yet. Be the first to add one!</p>
-                    </Card>
-                ) : (
-                    bets.map((bet) => (
-                        <Card key={bet.id}>
-                            {editingBet && editingBet.id === bet.id ? (
-                                <form onSubmit={handleSaveEdit} className="flex flex-col gap-4">
-                                    <input
-                                        type="text"
-                                        placeholder="What's the bet?"
-                                        className="input"
-                                        value={editingBet.title}
-                                        onChange={(e) => setEditingBet({ ...editingBet, title: e.target.value })}
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Your name"
-                                        className="input"
-                                        value={editingBet.creator}
-                                        onChange={(e) => setEditingBet({ ...editingBet, creator: e.target.value })}
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="What's at stake?"
-                                        className="input"
-                                        value={editingBet.stake}
-                                        onChange={(e) => setEditingBet({ ...editingBet, stake: e.target.value })}
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="People involved (comma-separated)"
-                                        className="input"
-                                        value={editingBet.participantInput}
-                                        onChange={(e) => setEditingBet({ ...editingBet, participantInput: e.target.value })}
-                                    />
-                                    <input
-                                        type="text"
-                                        placeholder="Additional notes, conditions, and positions"
-                                        className="input"
-                                        value={editingBet.notes}
-                                        onChange={(e) => setEditingBet({ ...editingBet, notes: e.target.value })}
-                                    />
-                                    <div className="flex gap-2">
-                                        <button type="submit" className="btn btn-lg">Save</button>
-                                        <button type="button" className="btn btn-lg" style={{ background: '#e5e5e5', color: '#525252' }} onClick={() => setEditingBet(null)}>Cancel</button>
-                                    </div>
-                                </form>
-                            ) : (
-                                <div className="flex items-start gap-2 sm:gap-4">
-                                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between flex-1 min-w-0">
-                                        <div>
-                                            <h3 className="text-neutral-900">{bet.title}</h3>
-                                            <p className="text-sm text-neutral-500 mt-1">
-                                                Created by {bet.creator} &middot; Stake: {bet.stake}
-                                            </p>
-                                            {bet.participants && bet.participants.length > 0 && (
-                                                <div className="flex flex-wrap gap-1.5 mt-2">
-                                                    {bet.participants.map((p) => (
-                                                        <span
-                                                            key={p}
-                                                            className="inline-flex items-center rounded-sm bg-blue-50 px-2.5 py-0.5 text-sm font-medium text-blue-600"
-                                                        >
-                                                            {p}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <div className="mt-4 text-neutral-600">Notes: {bet.notes}</div>
-                                        </div>
-                                        <span
-                                            className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold shrink-0 ${
-                                                bet.status === 'Active'
-                                                    ? 'bg-blue-100 text-blue-800'
-                                                    : bet.status === 'Completed'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : bet.status === 'Cancelled'
-                                                    ? 'bg-neutral-100 text-neutral-600'
-                                                    : 'bg-yellow-100 text-yellow-800'
-                                            }`}
-                                        >
-                                            {bet.status}
-                                        </span>
-                                    </div>
-                                    <BetMenu bet={bet} onEdit={handleEditBet} onChangeStatus={handleChangeStatus} />
-                                </div>
-                            )}
+                    {showForm && (
+                        <Card title="New Bet">
+                            <form onSubmit={handleAddBet} className="flex flex-col gap-4">
+                                <input
+                                    type="text"
+                                    placeholder="What's the bet?"
+                                    className="input"
+                                    value={newBet.title}
+                                    onChange={(e) => setNewBet({ ...newBet, title: e.target.value })}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Your name"
+                                    className="input"
+                                    value={newBet.creator}
+                                    onChange={(e) => setNewBet({ ...newBet, creator: e.target.value })}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="What's at stake?"
+                                    className="input"
+                                    value={newBet.stake}
+                                    onChange={(e) => setNewBet({ ...newBet, stake: e.target.value })}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="People involved (comma-separated, e.g. Alice, Bob)"
+                                    className="input"
+                                    value={newBet.participantInput}
+                                    onChange={(e) => setNewBet({ ...newBet, participantInput: e.target.value })}
+                                />
+                                <input
+                                    type="text"
+                                    placeholder="Additional notes, conditions, and positions"
+                                    className="input"
+                                    value={newBet.notes}
+                                    onChange={(e) => setNewBet({ ...newBet, notes: e.target.value })}
+                                />
+                                <button type="submit" className="btn btn-lg">
+                                    Place Bet
+                                </button>
+                            </form>
                         </Card>
-                    ))
-                )}
-            </section>
-        </div>
+                    )}
+                </section>
+
+                <section className="flex flex-col gap-4">
+                    {bets.length === 0 ? (
+                        <Card>
+                            <p className="text-center text-neutral-400">No bets yet. Be the first to add one!</p>
+                        </Card>
+                    ) : (
+                        bets.map((bet) => (
+                            <Card key={bet.id}>
+                                {editingBet && editingBet.id === bet.id ? (
+                                    <form onSubmit={handleSaveEdit} className="flex flex-col gap-4">
+                                        <input
+                                            type="text"
+                                            placeholder="What's the bet?"
+                                            className="input"
+                                            value={editingBet.title}
+                                            onChange={(e) => setEditingBet({ ...editingBet, title: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Your name"
+                                            className="input"
+                                            value={editingBet.creator}
+                                            onChange={(e) => setEditingBet({ ...editingBet, creator: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="What's at stake?"
+                                            className="input"
+                                            value={editingBet.stake}
+                                            onChange={(e) => setEditingBet({ ...editingBet, stake: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="People involved (comma-separated)"
+                                            className="input"
+                                            value={editingBet.participantInput}
+                                            onChange={(e) => setEditingBet({ ...editingBet, participantInput: e.target.value })}
+                                        />
+                                        <input
+                                            type="text"
+                                            placeholder="Additional notes, conditions, and positions"
+                                            className="input"
+                                            value={editingBet.notes}
+                                            onChange={(e) => setEditingBet({ ...editingBet, notes: e.target.value })}
+                                        />
+                                        <div className="flex gap-2">
+                                            <button type="submit" className="btn btn-lg">Save</button>
+                                            <button type="button" className="btn btn-lg" style={{ background: '#e5e5e5', color: '#525252' }} onClick={() => setEditingBet(null)}>Cancel</button>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <div className="flex items-start gap-2 sm:gap-4">
+                                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between flex-1 min-w-0">
+                                            <div>
+                                                <h3 className="text-neutral-900">{bet.title}</h3>
+                                                <p className="text-sm text-neutral-500 mt-1">
+                                                    Created by {bet.creator} &middot; Stake: {bet.stake}
+                                                </p>
+                                                {bet.participants && bet.participants.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1.5 mt-2">
+                                                        {bet.participants.map((p) => (
+                                                            <span
+                                                                key={p}
+                                                                className="inline-flex items-center rounded-sm bg-blue-50 px-2.5 py-0.5 text-sm font-medium text-blue-600"
+                                                            >
+                                                                {p}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                                <div className="mt-4 text-neutral-600">Notes: {bet.notes}</div>
+                                            </div>
+                                            <span
+                                                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold shrink-0 ${
+                                                    bet.status === 'Active'
+                                                        ? 'bg-blue-100 text-blue-800'
+                                                        : bet.status === 'Completed'
+                                                        ? 'bg-green-100 text-green-800'
+                                                        : bet.status === 'Cancelled'
+                                                        ? 'bg-neutral-100 text-neutral-600'
+                                                        : 'bg-yellow-100 text-yellow-800'
+                                                }`}
+                                            >
+                                                {bet.status}
+                                            </span>
+                                        </div>
+                                        <BetMenu bet={bet} onEdit={handleEditBet} onChangeStatus={handleChangeStatus} />
+                                    </div>
+                                )}
+                            </Card>
+                        ))
+                    )}
+                </section>
+            </div>
+            }
+        </>
     );
 }
