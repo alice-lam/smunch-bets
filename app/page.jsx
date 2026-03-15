@@ -4,12 +4,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Card } from 'components/card';
 
 const sampleBets = [
-    { id: 1, title: 'Team A wins the championship', creator: 'Alice', stake: '$20', status: 'Active', participants: ['Alice', 'Bob'] },
-    { id: 2, title: 'It rains on Friday', creator: 'Bob', stake: 'Lunch', status: 'Active', participants: ['Bob', 'Charlie'] },
-    { id: 3, title: 'New feature ships by end of sprint', creator: 'Charlie', stake: '$10', status: 'Pending', participants: ['Charlie'] }
+    { id: 1, title: 'Connally makes SciOly state', creator: 'Alice', stake: '$20', status: 'Pending', participants: ['Alice', 'Bob'] },
+    { id: 2, title: 'It rains on Friday', creator: 'Bob', stake: 'Lunch', status: 'Completed', participants: ['Bob', 'Charlie'], notes: 'Bob: yes, Charlie: no' },
+    { id: 3, title: 'New feature ships by end of sprint', creator: 'Charlie', stake: '1 shot', status: 'Cancelled', participants: ['Charlie'] }
 ];
 
-const STATUS_OPTIONS = ['Active', 'Pending', 'Won', 'Lost', 'Cancelled'];
+const STATUS_OPTIONS = ['Pending', 'Completed', 'Cancelled'];
 
 function BetMenu({ bet, onEdit, onChangeStatus }) {
     const [open, setOpen] = useState(false);
@@ -28,7 +28,7 @@ function BetMenu({ bet, onEdit, onChangeStatus }) {
     }, []);
 
     return (
-        <div className="relative shrink-0" ref={menuRef}>
+        <div className="relative shrink-0" style={{ 'align-self': 'center'}} ref={menuRef}>
             <button
                 onClick={() => { setOpen(!open); setShowStatusMenu(false); }}
                 className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-100 transition-colors text-neutral-400 hover:text-neutral-600"
@@ -81,7 +81,7 @@ function BetMenu({ bet, onEdit, onChangeStatus }) {
 export default function Page() {
     const [bets, setBets] = useState(sampleBets);
     const [showForm, setShowForm] = useState(false);
-    const [newBet, setNewBet] = useState({ title: '', creator: '', stake: '', participantInput: '' });
+    const [newBet, setNewBet] = useState({ title: '', creator: '', stake: '', participantInput: '', notes: '' });
     const [editingBet, setEditingBet] = useState(null);
 
     function handleAddBet(e) {
@@ -97,8 +97,8 @@ export default function Page() {
             participants.unshift(newBet.creator);
         }
 
-        setBets([...bets, { id: Date.now(), title: newBet.title, creator: newBet.creator, stake: newBet.stake, participants, status: 'Active' }]);
-        setNewBet({ title: '', creator: '', stake: '', participantInput: '' });
+        setBets([...bets, { id: Date.now(), title: newBet.title, creator: newBet.creator, stake: newBet.stake, participants, notes: newBet.notes, status: 'Active' }]);
+        setNewBet({ title: '', creator: '', stake: '', participantInput: '', notes: '' });
         setShowForm(false);
     }
 
@@ -170,6 +170,13 @@ export default function Page() {
                                 value={newBet.participantInput}
                                 onChange={(e) => setNewBet({ ...newBet, participantInput: e.target.value })}
                             />
+                            <input
+                                type="text"
+                                placeholder="Additional notes, conditions, and positions"
+                                className="input"
+                                value={newBet.notes}
+                                onChange={(e) => setNewBet({ ...newBet, notes: e.target.value })}
+                            />
                             <button type="submit" className="btn btn-lg">
                                 Place Bet
                             </button>
@@ -216,6 +223,13 @@ export default function Page() {
                                         value={editingBet.participantInput}
                                         onChange={(e) => setEditingBet({ ...editingBet, participantInput: e.target.value })}
                                     />
+                                    <input
+                                        type="text"
+                                        placeholder="Additional notes, conditions, and positions"
+                                        className="input"
+                                        value={editingBet.notes}
+                                        onChange={(e) => setEditingBet({ ...editingBet, notes: e.target.value })}
+                                    />
                                     <div className="flex gap-2">
                                         <button type="submit" className="btn btn-lg">Save</button>
                                         <button type="button" className="btn btn-lg" style={{ background: '#e5e5e5', color: '#525252' }} onClick={() => setEditingBet(null)}>Cancel</button>
@@ -226,7 +240,7 @@ export default function Page() {
                                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between flex-1 min-w-0">
                                         <div>
                                             <h3 className="text-neutral-900">{bet.title}</h3>
-                                            <p className="text-sm text-neutral-500">
+                                            <p className="text-sm text-neutral-500 mt-1">
                                                 Created by {bet.creator} &middot; Stake: {bet.stake}
                                             </p>
                                             {bet.participants && bet.participants.length > 0 && (
@@ -234,22 +248,21 @@ export default function Page() {
                                                     {bet.participants.map((p) => (
                                                         <span
                                                             key={p}
-                                                            className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700"
+                                                            className="inline-flex items-center rounded-sm bg-blue-50 px-2.5 py-0.5 text-sm font-medium text-blue-600"
                                                         >
                                                             {p}
                                                         </span>
                                                     ))}
                                                 </div>
                                             )}
+                                            <div className="mt-4 text-neutral-600">Notes: {bet.notes}</div>
                                         </div>
                                         <span
                                             className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold shrink-0 ${
                                                 bet.status === 'Active'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : bet.status === 'Won'
                                                     ? 'bg-blue-100 text-blue-800'
-                                                    : bet.status === 'Lost'
-                                                    ? 'bg-red-100 text-red-800'
+                                                    : bet.status === 'Completed'
+                                                    ? 'bg-green-100 text-green-800'
                                                     : bet.status === 'Cancelled'
                                                     ? 'bg-neutral-100 text-neutral-600'
                                                     : 'bg-yellow-100 text-yellow-800'
