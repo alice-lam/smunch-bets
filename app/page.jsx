@@ -107,8 +107,8 @@ export default function Page() {
             : [];
 
         // Include the creator if not already listed
-        if (!participants.some((p) => p.toLowerCase() === newBet.creator.toLowerCase())) {
-            participants.unshift(newBet.creator);
+        if (!participants.some((p) => p.toLowerCase() === user.name.toLowerCase())) {
+            participants.unshift(user.name);
         }
         const newBetEntry = { title: newBet.title, creator: user.name, stake: newBet.stake, participants, notes: newBet.notes, status: 'Pending Punishment' };
         const result = await pushData(newBetEntry);
@@ -163,8 +163,12 @@ export default function Page() {
 
     const updatedBets = isLoggedIn ? 
         bets.filter(bet => {
-            const isCreator = bet.creator === user.name;
-            const isParticipant = bet.participants?.includes(user.name);
+            const userName = user.name?.toLowerCase().trim();
+
+            const isCreator = bet.creator?.toLowerCase().trim() === userName;
+            const isParticipant = bet.participants?.some(participant => 
+                participant.toLowerCase().trim() === userName
+            );
 
             return isCreator || isParticipant;
         }) : bets;
