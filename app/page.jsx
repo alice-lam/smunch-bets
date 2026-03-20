@@ -85,6 +85,7 @@ export default function Page() {
     const [showForm, setShowForm] = useState(false);
     const [newBet, setNewBet] = useState({ title: '', creator: '', stake: '', participantInput: '', notes: '' });
     const [editingBet, setEditingBet] = useState(null);
+    const [submittingBet, setSubmittingBet] = useState(false);
     const [loading, setLoading] = useState(true);
     const { user } = useAuth();
     const isLoggedIn = user ? true : false;
@@ -101,6 +102,9 @@ export default function Page() {
     async function handleAddBet(e) {
         e.preventDefault();
         if (!newBet.title || !newBet.stake) return;
+        if (isSubmitting) return;
+
+        setIsSubmitting(true);
 
         const participants = newBet.participantInput
             ? newBet.participantInput.split(',').map((p) => p.trim()).filter(Boolean)
@@ -117,6 +121,7 @@ export default function Page() {
             setNewBet({ title: '', creator: '', stake: '', participantInput: '', notes: '' });
             setShowForm(false);
         }
+        setIsSubmitting(false);
     }
 
     function handleEditBet(bet) {
@@ -220,7 +225,7 @@ export default function Page() {
                                     onChange={(e) => setNewBet({ ...newBet, notes: e.target.value })}
                                 />
                                 <button type="submit" className="btn btn-lg">
-                                    Place Bet
+                                    {isSubmitting ? "Saving..." : "Place Bet"}
                                 </button>
                             </form>
                         </Card>
