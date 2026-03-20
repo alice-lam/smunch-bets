@@ -30,7 +30,7 @@ function BetMenu({ bet, onEdit, onChangeStatus }) {
     }, []);
 
     return (
-        <div className="relative shrink-0" style={{ alignSelf: 'center'}} ref={menuRef}>
+        <div className="relative shrink-0" ref={menuRef}>
             <button
                 onClick={() => { setOpen(!open); setShowStatusMenu(false); }}
                 className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-neutral-100 transition-colors text-neutral-400 hover:text-neutral-600"
@@ -305,11 +305,11 @@ export default function Page() {
                                                 </div>
                                                 <div className="mt-1 text-neutral-600">
                                                     Additional Notes: 
-                                                    <span className="mt-1 mx-2 text-neutral-500">{bet.notes}</span>
+                                                    <p className="mt-1 text-neutral-500">{bet.notes}</p>
                                                 </div>
                                             </div>
-                                            <span
-                                                className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-bold shrink-0 ${
+                                            <div
+                                                className={`inline-flex justify-center rounded-full mt-3 px-3 py-2 text-xs font-bold shrink-0 ${
                                                     bet.status === 'In Progress'
                                                         ? 'bg-blue-100 text-blue-800'
                                                         : bet.status === 'Completed'
@@ -320,7 +320,7 @@ export default function Page() {
                                                 }`}
                                             >
                                                 {bet.status}
-                                            </span>
+                                            </div>
                                         </div>
                                         {isLoggedIn && 
                                             <BetMenu bet={bet} onEdit={handleEditBet} onChangeStatus={handleChangeStatus} />
