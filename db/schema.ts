@@ -1,4 +1,4 @@
-import { jsonb, integer, pgTable, text } from 'drizzle-orm/pg-core';
+import { timestamp, jsonb, integer, pgTable, text } from 'drizzle-orm/pg-core';
 
 export const posts = pgTable('posts', {
     id: integer('id').primaryKey(),
@@ -8,4 +8,5 @@ export const posts = pgTable('posts', {
     status: text('status').notNull().default('Pending'),
     participants: jsonb('participants').$type<string[]>().notNull(),
     notes: text('notes'),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
 });
