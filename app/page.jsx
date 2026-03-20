@@ -224,9 +224,10 @@ export default function Page() {
                 </section>
 
                 <section className="flex flex-col gap-4">
-                    {updatedBets.length === 0 ? (
+                    {!isLoggedIn || updatedBets.length === 0 ? (
                         <Card>
-                            <p className="text-center text-neutral-400">No bets yet. Be the first to add one!</p>
+                            {!isLoggedIn && <p className="text-center text-neutral-400">Sign in to add and view your bets!</p>}
+                            {isLoggedIn && updatedBets.length === 0 && <p className="text-center text-neutral-400">No bets yet. Feel free to create one!</p>}
                         </Card>
                     ) : (
                         updatedBets.map((bet) => (
