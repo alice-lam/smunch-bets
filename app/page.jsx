@@ -114,7 +114,7 @@ export default function Page() {
         if (!participants.some((p) => p.toLowerCase() === user.name.toLowerCase())) {
             participants.unshift(user.name);
         }
-        const newBetEntry = { title: newBet.title, creator: user.name, stake: newBet.stake, participants, notes: newBet.notes, status: 'Pending Punishment' };
+        const newBetEntry = { title: newBet.title, creator: user.name, stake: newBet.stake, participants, notes: newBet.notes, status: 'In Progress' };
         const result = await pushData(newBetEntry);
         if(result.success) {
             setBets([...bets, newBetEntry]);
