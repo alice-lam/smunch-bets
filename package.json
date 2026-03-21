@@ -33,7 +33,7 @@
     "@types/react": "19.2.14",
     "babel-plugin-react-compiler": "^1.0.0",
     "drizzle-kit": "^0.31.9",
-    "eslint": "9.39.4",
+    "eslint": "^9.39.4",
     "eslint-config-next": "^16.0.8",
     "postcss": "^8.4.36",
     "tailwindcss": "^4.1.15"
